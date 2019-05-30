@@ -4,11 +4,13 @@
   "description": "Скилл для Алисы для расчета в баре",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ."
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "lodash": "4.17.11",
     "yandex-dialogs-sdk": "^2.2.0"
   },
   "devDependencies": {},

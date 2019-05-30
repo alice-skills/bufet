@@ -27,7 +27,7 @@ alice.command(ctx => {
 });
 
 // команду на подсчёт итога надо ещё доработать
-alice.command(/^итог$/i, async ctx => {
+alice.command(ctx => ctx.nlu.tokens.includes('итог'), async ctx => {
     const doc = await findOne('itog', {uid: ctx.userId});
     return Reply
         .text(doc ? `Ваш счёт ${countCheckTotal(doc)} рублей` : 'У вас нет открытых чеков');

@@ -2,7 +2,7 @@ const { Alice, Reply } = require('yandex-dialogs-sdk');
 const { formatBill } = require('./lib/formatter');
 const { updateSid, createSession } = require('./lib/helpers');
 const { checkTotal } = require('./lib/filters');
-const { updateOne } = require('./lig/mongo');
+const { updateOne } = require('./lib/mongo');
 const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
 
 const alice = new Alice();

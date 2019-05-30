@@ -1,7 +1,7 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
 const { formatBill } = require('./lib/formatter');
-const { updateSid, createSession, addItem } = require('./lib/helpers');
-const { checkTotal } = require('./lib/filters');
+const { updateSid, createSession, addItem, close } = require('./lib/helpers');
+const { checkTotal, closeCheck } = require('./lib/filters');
 const { updateOne } = require('./lib/mongo');
 const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
 
@@ -52,6 +52,9 @@ alice.command(ctx => {
         .text( `Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
 });
 
+// посчитай меня
+// подведи итог
+// сколько
 alice.command(checkTotal, async ctx => {
     if (!ctx.bill) {
         return Reply.text(NO_RECEIPTS);
@@ -60,10 +63,27 @@ alice.command(checkTotal, async ctx => {
         await updateSid(ctx.bill, ctx.sessionId);
     }
     if (!Array.isArray(ctx.bill.items) || ctx.bill.items.length <= 0) {
-        return Reply.text('У вас нет добавленных позиций');
+        return Reply.text(EMPTY_RECEIPTS);
     }
 
     return Reply.text(`Ваш счёт ${countCheckTotal(ctx.bill)} рублей`);
+});
+
+// закрыть
+alice.command(closeCheck, async ctx => {
+    if (!ctx.bill) {
+        return Reply.text(NO_RECEIPTS);
+    }
+    if (!Array.isArray(ctx.bill.items) || ctx.bill.items.length <= 0) {
+        return Reply.text(EMPTY_RECEIPTS);
+    }
+
+    await close(ctx.bill);
+
+    return Reply.text({
+        text: 'Ваш счёт: \n' + formatBill(ctx.bill),
+        tts: `Ваш счёт на сумму ${countCheckTotal(ctx.bill)} рублей`
+    });
 });
 
 // покажи чек

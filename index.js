@@ -16,8 +16,9 @@ const SAY_DISH_AND_COST_TO_ADD = 'Чтобы добавить позицию в 
 alice.use(require('./lib/usermw'));
 
 alice.any(ctx => {
-    return Reply
-        .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : SAY_OPEN_TO_START}`)
+    return Reply.text(hasOpenedReceipt(ctx) ?
+        `У тебя есть открытый чек. Что еще записать?` :
+        `Привет! Я помогу тебе вести список заказанного в баре. ${SAY_OPEN_TO_START}`)
 });
 
 //справка
@@ -59,7 +60,7 @@ alice.command(ctx => {
 // удалить
 alice.command(/удали(|ть)/i, async ctx => {
 
-    const items = ctx.bill && ctx.bill.items || [] ;
+    const items = ctx.bill && ctx.bill.items || [];
 
     if (items.length === 0) {
         return Reply.text('В счете пусто, нечего удалять!')
@@ -67,10 +68,10 @@ alice.command(/удали(|ть)/i, async ctx => {
 
     const lastItem = items.pop();
 
-    await updateOne('checks', {_id: ctx.bill._id}, { $pop:  { items: 1 } });
+    await updateOne('checks', { _id: ctx.bill._id }, { $pop: { items: 1 } });
 
     return Reply
-        .text( `Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
+        .text(`Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
 });
 
 // закрыть
@@ -140,7 +141,7 @@ alice.command(/откр(ыть|ой) (чек|сч[её]т)/i, async ctx => {
         items: []
     });
 
-    return Reply.text(`Я добавила новый чек. ${SAY_DISH_AND_COST_TO_ADD}`);
+    return Reply.text(`Я добавила новый чек.${SAY_DISH_AND_COST_TO_ADD} `);
 });
 
 // продолжи чек
@@ -154,7 +155,7 @@ alice.command(/продолжи(|ть) (чек|сч[её]т)/i, ctx => {
         return Reply.text(SAY_DISH_AND_COST_TO_ADD);
     }
 
-    return Reply.text(`${NO_RECEIPTS}. ${SAY_OPEN_TO_START}`);
+    return Reply.text(`${NO_RECEIPTS}.${SAY_OPEN_TO_START} `);
 });
 
 // Команда добавления позиции в чек
@@ -163,6 +164,10 @@ alice.command(ctx => {
 
     return hasNumber(tokens);
 }, ctx => {
+    if (!hasOpenedReceipt(ctx)) {
+        return Reply.text(`${NO_RECEIPTS} ${SAY_OPEN_TO_START}`);
+    }
+
     const { tokens } = ctx.nlu;
 
     const introductoryTokens = ['добавь', 'запиши', 'заказал'];
@@ -190,7 +195,7 @@ alice.command(ctx => {
 
     addItem(ctx.bill, item)
 
-    return Reply.text(`Я добавила: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
+    return Reply.text(`Я добавила: ${clippedArray.join(' ')}, 1 штука, ${cost} р.`);
 })
 
 alice.command(/.+/, () => Reply.text('Не поняла'));

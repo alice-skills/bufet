@@ -1,6 +1,6 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
 const { formatBill } = require('./lib/formatter');
-const { updateSid, createSession } = require('./lib/helpers');
+const { updateSid, createSession, addItem } = require('./lib/helpers');
 const { checkTotal } = require('./lib/filters');
 const { updateOne } = require('./lib/mongo');
 const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
@@ -121,7 +121,15 @@ alice.command(ctx => {
 
     const cost = [...tokens].reverse().find(token => !isNaN(parseInt(token, 10)));
 
-    return Reply.text(`Я распознала: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
+    const item = {
+        cost,
+        count: 1,
+        title: clippedArray.join(' ')
+    };
+
+    addItem(ctx.bill, item)
+
+    return Reply.text(`Я добавила: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
 })
 
 // команда удаления

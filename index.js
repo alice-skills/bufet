@@ -31,6 +31,27 @@ alice.command(ctx => {
     return Reply.text('Извини, я не могу работать с другими валютами, кроме рубля');
 });
 
+// команда удаления
+alice.command(ctx => {
+    const words = ctx.nlu.tokens;
+
+    return words.includes('удали');
+}, async ctx => {
+
+    const items = ctx.bill && ctx.bill.items || [] ;
+
+    if (items.length === 0) {
+        return Reply.text('В счете пусто, нечего удалять!')
+    }
+
+    const lastItem = items.pop();
+
+    await updateOne('checks', {_id: ctx.bill._id}, { $pop:  { items: 1 } });
+
+    return Reply
+        .text( `Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
+});
+
 alice.command(checkTotal, async ctx => {
     if (!ctx.bill) {
         return Reply.text(NO_RECEIPTS);
@@ -137,27 +158,6 @@ alice.command(ctx => {
 
     return Reply.text(`Я добавила: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
 })
-
-// команда удаления
-alice.command(ctx => {
-    const words = ctx.nlu.tokens;
-
-    return words.includes('удали');
-}, async ctx => {
-
-    const items = ctx.bill && ctx.bill.items || [] ;
-
-    if (items.length === 0) {
-        return Reply.text('В счете пусто, нечего удалять!')
-    }
-
-    const lastItem = items.pop();
-
-    await updateOne('checks', {_id: ctx.bill._id}, { $pop:  { items: 1 } });
-
-    return Reply
-        .text( `Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
-});
 
 alice.command(/.+/, () => Reply.text('Не поняла'));
 

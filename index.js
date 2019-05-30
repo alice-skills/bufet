@@ -1,5 +1,5 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
-const { findOne } = require('./lib/mongo');
+const { findOne, insert } = require('./lib/mongo');
 const { countCheckTotal, hasOpenedReceipt } = require('./lib/utils');
 const { formatBill } = require('./lib/formatter');
 
@@ -25,7 +25,7 @@ alice.command(ctx => {
 
 // команду на подсчёт итога надо ещё доработать
 alice.command(ctx => ctx.nlu.tokens.includes('итог'), async ctx => {
-    const doc = await findOne('itog', {uid: ctx.userId});
+    const doc = await findOne('itog', { uid: ctx.userId });
     return Reply
         .text(doc ? `Ваш счёт ${countCheckTotal(doc)} рублей` : NO_RECEIPTS);
 });
@@ -41,6 +41,28 @@ alice.command(/покажи сч[её]т/i, ctx => {
         reply = 'Ваш счёт: \n' + formatBill(bill);
     }
     return Reply.text(reply);
+});
+
+alice.command(['открыть чек', 'открой чек'], async ctx => {
+    console.log(ctx);
+    const { userId, sessionId, bill } = ctx;
+
+    if (bill) {
+        return Reply.text('Чек уже открыт');
+    }
+
+    const now = Date.now();
+
+    await insert('checks', {
+        sId: sessionId,
+        uid: userId,
+        created_at: now,
+        updated_at: now,
+        is_closed: false,
+        items: []
+    });
+
+    return Reply.text('Я добавила новый чек. Чтобы добавить позицию в чек, назови блюдо или напиток, а так же его стоимость');
 });
 
 alice.command(/.+/, ctx => Reply.text('Не поняла'));

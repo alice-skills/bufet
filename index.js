@@ -7,6 +7,7 @@ const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt
 const alice = new Alice();
 
 const NO_RECEIPTS = 'У вас нет открытых чеков';
+const EMPTY_RECEIPTS = 'Ваш чек пока пуст';
 
 alice.use(require('./lib/usermw'));
 
@@ -41,23 +42,32 @@ alice.command(checkTotal, async ctx => {
     return Reply.text(`Ваш счёт ${countCheckTotal(ctx.bill)} рублей`);
 });
 
-alice.command(/покажи сч[её]т/i, ctx => {
+// покажи чек
+// покажи счет
+// покажи счёт
+alice.command(/покажи (чек|сч[её]т)/i, ctx => {
     const bill = ctx.bill;
     let reply;
     if (!bill) {
         reply = NO_RECEIPTS;
     } else if (!bill.items || !bill.items.length) {
-        reply = NO_RECEIPTS
+        reply = EMPTY_RECEIPTS
     } else {
         reply = 'Ваш счёт: \n' + formatBill(bill);
     }
     return Reply.text(reply);
 });
 
-alice.command(['открыть чек', 'открой чек'], async ctx => {
-    const { userId, sessionId, bill } = ctx;
+// открыть чек
+// открыть счет
+// открыть счёт
+// открой чек
+// открой счет
+// открой счёт
+alice.command(/откр(ыть|ой) (чек|сч[её]т)/i, async ctx => {
+    const { userId, sessionId } = ctx;
 
-    if (bill) {
+    if (hasOpenedReceipt(ctx)) {
         return Reply.text('Чек уже открыт');
     }
 

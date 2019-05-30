@@ -10,6 +10,8 @@ const hasOpenedReceipt = userId => {
     return false;
 };
 
+alice.use(require('./lib/usermw'));
+
 alice.any(ctx => {
     return Reply
         .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx.userId) ? '' : 'Для начала работы скажите - Открыть чек'}`)
@@ -31,6 +33,9 @@ alice.command(/^итог$/i, async ctx => {
         .text(doc ? `Ваш счёт ${countCheckTotal(doc)} рублей` : 'У вас нет открытых чеков');
 });
 
-alice.command(/.+/, ctx => Reply.text('Не поняла'));
+alice.command(/.+/, ctx => {
+    console.log(ctx.bill);
+    return Reply.text('Не поняла');
+});
 
 alice.listen(process.env.PORT || 3000, '');

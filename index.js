@@ -1,9 +1,10 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
+
 const { formatBill } = require('./lib/formatter');
-const { updateSid, createSession, addItem } = require('./lib/helpers');
+const { updateSid, createSession, addItem, close } = require('./lib/helpers');
 const { checkTotal, closeCheck } = require('./lib/filters');
 const { updateOne } = require('./lib/mongo');
-const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
+const { deleteLeftHandExcessTokens, hasNumber, hasOpenedReceipt } = require('./lib/utils');
 
 const alice = new Alice();
 
@@ -109,10 +110,7 @@ alice.command(closeCheck, async ctx => {
     });
 });
 
-// покажи чек
-// покажи счет
-// покажи счёт
-alice.command(/покажи (чек|сч[её]т)/i, ctx => {
+const getTotal = async ctx => {
     const bill = ctx.bill;
     let reply;
     if (!bill) {
@@ -120,10 +118,23 @@ alice.command(/покажи (чек|сч[её]т)/i, ctx => {
     } else if (!bill.items || !bill.items.length) {
         reply = EMPTY_RECEIPTS
     } else {
+        if (bill.sid !== ctx.sessionId) {
+            await updateSid(bill, ctx.sessionId);
+        }
         reply = 'Ваш счёт: \n' + formatBill(bill);
     }
     return Reply.text(reply);
-});
+};
+
+// подведи итог
+// посчитай меня
+// сколько
+alice.command(checkTotal, getTotal);
+
+// покажи чек
+// покажи счет
+// покажи счёт
+alice.command(/покажи (чек|сч[её]т)/i, getTotal);
 
 // открыть чек
 // открыть счет
@@ -197,10 +208,12 @@ alice.command(ctx => {
         title: clippedArray.join(' ')
     };
 
-    addItem(ctx.bill, item);
+    addItem(ctx.bill, item)
+
     return Reply.text(`Я добавила: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
-});
+})
 
 alice.command(/.+/, () => Reply.text('Не поняла'));
 
 alice.listen(process.env.PORT || 3000, '');
+

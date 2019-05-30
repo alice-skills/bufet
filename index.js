@@ -1,6 +1,6 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
 const { formatBill } = require('./lib/formatter');
-const { updateSid, createSession, addItem, close } = require('./lib/helpers');
+const { updateSid, createSession, addItem } = require('./lib/helpers');
 const { checkTotal, closeCheck } = require('./lib/filters');
 const { updateOne } = require('./lib/mongo');
 const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
@@ -17,6 +17,29 @@ alice.use(require('./lib/usermw'));
 alice.any(ctx => {
     return Reply
         .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : SAY_OPEN_TO_START}`)
+});
+
+//справка
+alice.command(/справка|что ты умеешь|что делать|навык|помоги|помощь/i, ctx => {
+    const words = ctx.nlu.tokens;
+
+    if (words.includes('удали')) {
+        return Reply.text("Скажи удалить, и я удалю последнюю позицию в счете");
+    }
+
+    if (words.includes('добавить') || words.includes('записать')) {
+        return Reply.text("Скажи что хочешь заказать и стоимость");
+    }
+
+    if (words.includes('итог') || words.includes('посчитать')) {
+        return Reply.text("Нужно сказать \"Посчитай меня\"");
+    }
+
+    if (words.includes('счет')) {
+        return Reply.text("Чтобы увидеть свой счет, нужно попросить меня показать его, а еще можно закрывать счета и открывать новые");
+    }
+
+    return Reply.text("Я умею многое! Создавать и закрывать счета, добавлять и удалять, подводить итог и выводить список.");
 });
 
 const stopWords = [
@@ -63,7 +86,7 @@ alice.command(checkTotal, async ctx => {
         await updateSid(ctx.bill, ctx.sessionId);
     }
     if (!Array.isArray(ctx.bill.items) || ctx.bill.items.length <= 0) {
-        return Reply.text(EMPTY_RECEIPTS);
+        return Reply.text('У вас нет добавленных позиций');
     }
 
     return Reply.text(`Ваш счёт ${countCheckTotal(ctx.bill)} рублей`);
@@ -174,10 +197,9 @@ alice.command(ctx => {
         title: clippedArray.join(' ')
     };
 
-    addItem(ctx.bill, item)
-
+    addItem(ctx.bill, item);
     return Reply.text(`Я добавила: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
-})
+});
 
 alice.command(/.+/, () => Reply.text('Не поняла'));
 

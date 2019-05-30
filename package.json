@@ -1,0 +1,14 @@
+{
+  "name": "a1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "yandex-dialogs-sdk": "^2.2.0"
+  }
+}

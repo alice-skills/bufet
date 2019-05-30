@@ -10,6 +10,8 @@ const hasOpenedReceipt = userId => {
     return false;
 };
 
+alice.use(require('./lib/usermw'));
+
 alice.any(ctx => {
     return Reply
         .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx.userId) ? '' : 'Для начала работы скажите - Открыть чек'}`)

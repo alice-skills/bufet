@@ -33,9 +33,6 @@ alice.command(/^итог$/i, async ctx => {
         .text(doc ? `Ваш счёт ${countCheckTotal(doc)} рублей` : 'У вас нет открытых чеков');
 });
 
-alice.command(/.+/, ctx => {
-    console.log(ctx.bill);
-    return Reply.text('Не поняла');
-});
+alice.command(/.+/, ctx => Reply.text('Не поняла'));
 
 alice.listen(process.env.PORT || 3000, '');

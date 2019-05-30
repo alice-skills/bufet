@@ -11,7 +11,7 @@ const {
 const checkTokens = ctx => {
   const { tokens } = ctx.nlu;
 
-  return hasNumber(tokens);
+  return hasNumber(tokens) && !hasNumber([tokens[0]]);
 };
 
 const add = ctx => {

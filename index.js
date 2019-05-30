@@ -15,16 +15,7 @@ alice.any(ctx => {
         .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : 'Для начала работы скажите - Открыть чек'}`)
 });
 
-alice.command(ctx => {
-    const words = ctx.nlu.tokens;
-
-    return words.includes('открыть') && words.includes('чек');
-}, ctx => {
-    return Reply
-        .text(hasOpenedReceipt(ctx) ? 'Открываю' : NO_RECEIPTS);
-});
-
-alice.command(checkTotal, async ctx => {
+lice.command(checkTotal, async ctx => {
     if (!ctx.bill) {
         return Reply.text(NO_RECEIPTS);
     }

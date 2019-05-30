@@ -1,4 +1,6 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
+const { findOne } = require('./lib/mongo');
+const { countCheckTotal } = require('./lib/utils');
 
 const alice = new Alice();
 
@@ -20,6 +22,13 @@ alice.command(ctx => {
 }, ctx => {
     return Reply
         .text(hasOpenedReceipt(ctx.userId) ? 'Открываю' : 'У вас нет открытых чеков');
+});
+
+// команду на подсчёт итога надо ещё доработать
+alice.command(/^итог$/i, async ctx => {
+    const doc = await findOne('itog', {uid: ctx.userId});
+    return Reply
+        .text(doc ? `Ваш счёт ${countCheckTotal(doc)} рублей` : 'У вас нет открытых чеков');
 });
 
 alice.command(/.+/, ctx => Reply.text('Не поняла'));

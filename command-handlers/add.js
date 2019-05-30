@@ -21,7 +21,7 @@ const add = ctx => {
 
   const { tokens } = ctx.nlu;
 
-  const introductoryTokens = ["добавь", "запиши", "заказал"];
+  const introductoryTokens = ["добавь", "запиши", "заказал", "хочу"];
 
   let startIndex;
   let clippedArray;

@@ -73,23 +73,6 @@ alice.command(/удали(|ть)/i, async ctx => {
         .text( `Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
 });
 
-// посчитай меня
-// подведи итог
-// сколько
-alice.command(checkTotal, async ctx => {
-    if (!ctx.bill) {
-        return Reply.text(NO_RECEIPTS);
-    }
-    if (ctx.bill.sid !== ctx.sessionId) {
-        await updateSid(ctx.bill, ctx.sessionId);
-    }
-    if (!Array.isArray(ctx.bill.items) || ctx.bill.items.length <= 0) {
-        return Reply.text('У вас нет добавленных позиций');
-    }
-
-    return Reply.text(`Ваш счёт ${countCheckTotal(ctx.bill)} рублей`);
-});
-
 // закрыть
 alice.command(closeCheck, async ctx => {
     if (!ctx.bill) {

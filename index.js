@@ -1,23 +1,17 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
 const { findOne } = require('./lib/mongo');
-const { countCheckTotal } = require('./lib/utils');
+const { countCheckTotal, hasOpenedReceipt } = require('./lib/utils');
 const { formatBill } = require('./lib/formatter');
 
 const alice = new Alice();
 
 const NO_RECEIPTS = 'У вас нет открытых чеков';
 
-const hasOpenedReceipt = userId => {
-    // TODO: check in DB.
-
-    return false;
-};
-
 alice.use(require('./lib/usermw'));
 
 alice.any(ctx => {
     return Reply
-        .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx.userId) ? '' : 'Для начала работы скажите - Открыть чек'}`)
+        .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : 'Для начала работы скажите - Открыть чек'}`)
 });
 
 alice.command(ctx => {
@@ -26,7 +20,7 @@ alice.command(ctx => {
     return words.includes('открыть') && words.includes('чек');
 }, ctx => {
     return Reply
-        .text(hasOpenedReceipt(ctx.userId) ? 'Открываю' : NO_RECEIPTS);
+        .text(hasOpenedReceipt(ctx) ? 'Открываю' : NO_RECEIPTS);
 });
 
 // команду на подсчёт итога надо ещё доработать

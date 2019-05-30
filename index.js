@@ -2,6 +2,7 @@ const { Alice, Reply } = require('yandex-dialogs-sdk');
 const { formatBill } = require('./lib/formatter');
 const { updateSid, createSession } = require('./lib/helpers');
 const { checkTotal } = require('./lib/filters');
+const { updateOne } = require('./lig/mongo');
 const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
 
 const alice = new Alice();
@@ -112,6 +113,27 @@ alice.command(ctx => {
 
     return Reply.text(`Я распознала: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
 })
+
+// команда удаления
+alice.command(ctx => {
+    const words = ctx.nlu.tokens;
+
+    return words.includes('удали');
+}, async ctx => {
+
+    const items = ctx.bill && ctx.bill.items || [] ;
+
+    if (items.length === 0) {
+        return Reply.text('В счете пусто, нечего удалять!')
+    }
+
+    const lastItem = items.pop();
+
+    await updateOne('checks', {_id: ctx.bill._id}, { $pop:  { items: 1 } });
+
+    return Reply
+        .text( `Удалила ${lastItem.title} стоимостью ${lastItem.cost} рублей`);
+});
 
 alice.command(/.+/, () => Reply.text('Не поняла'));
 

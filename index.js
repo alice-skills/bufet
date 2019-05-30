@@ -8,12 +8,14 @@ const alice = new Alice();
 
 const NO_RECEIPTS = 'У вас нет открытых чеков';
 const EMPTY_RECEIPTS = 'Ваш чек пока пуст';
+const SAY_OPEN_TO_START = 'Для начала работы скажите - Открыть чек';
+const SAY_DISH_AND_COST_TO_ADD = 'Чтобы добавить позицию в чек, назови блюдо или напиток, а так же его стоимость';
 
 alice.use(require('./lib/usermw'));
 
 alice.any(ctx => {
     return Reply
-        .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : 'Для начала работы скажите - Открыть чек'}`)
+        .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : SAY_OPEN_TO_START}`)
 });
 
 const stopWords = [
@@ -71,7 +73,7 @@ alice.command(/откр(ыть|ой) (чек|сч[её]т)/i, async ctx => {
         return Reply.text('Чек уже открыт');
     }
 
-    const now = Date.now();
+    const now = new Date();
 
     await createSession({
         sId: sessionId,
@@ -82,7 +84,15 @@ alice.command(/откр(ыть|ой) (чек|сч[её]т)/i, async ctx => {
         items: []
     });
 
-    return Reply.text('Я добавила новый чек. Чтобы добавить позицию в чек, назови блюдо или напиток, а так же его стоимость');
+    return Reply.text(`Я добавила новый чек. ${SAY_DISH_AND_COST_TO_ADD}`);
+});
+
+alice.command(/продолжи(|ть) (чек|сч[её]т)/i, ctx => {
+    if (hasOpenedReceipt(ctx)) {
+        return Reply.text(SAY_DISH_AND_COST_TO_ADD);
+    }
+
+    return Reply.text(`${NO_RECEIPTS}. ${SAY_OPEN_TO_START}`);
 });
 
 // Команда добавления позиции в чек

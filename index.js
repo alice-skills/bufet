@@ -1,7 +1,8 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
-const { findOne, insert } = require('./lib/mongo');
 const { countCheckTotal, hasOpenedReceipt } = require('./lib/utils');
 const { formatBill } = require('./lib/formatter');
+const { updateSid, createSession } = require('./lib/helpers');
+const { checkTotal } = require('./lib/filters');
 
 const alice = new Alice();
 
@@ -23,11 +24,18 @@ alice.command(ctx => {
         .text(hasOpenedReceipt(ctx) ? 'Открываю' : NO_RECEIPTS);
 });
 
-// команду на подсчёт итога надо ещё доработать
-alice.command(ctx => ctx.nlu.tokens.includes('итог'), async ctx => {
-    const doc = await findOne('itog', { uid: ctx.userId });
-    return Reply
-        .text(doc ? `Ваш счёт ${countCheckTotal(doc)} рублей` : NO_RECEIPTS);
+alice.command(checkTotal, async ctx => {
+    if (!ctx.bill) {
+        return Reply.text(NO_RECEIPTS);
+    }
+    if (ctx.bill.sid !== ctx.sessionId) {
+        await updateSid(ctx.bill, ctx.sessionId);
+    }
+    if (!Array.isArray(ctx.bill.items) || ctx.bill.items.length <= 0) {
+        return Reply.text('У вас нет добавленных позиций');
+    }
+
+    return Reply.text(`Ваш счёт ${countCheckTotal(ctx.bill)} рублей`);
 });
 
 alice.command(/покажи сч[её]т/i, ctx => {
@@ -44,7 +52,6 @@ alice.command(/покажи сч[её]т/i, ctx => {
 });
 
 alice.command(['открыть чек', 'открой чек'], async ctx => {
-    console.log(ctx);
     const { userId, sessionId, bill } = ctx;
 
     if (bill) {
@@ -53,7 +60,7 @@ alice.command(['открыть чек', 'открой чек'], async ctx => {
 
     const now = Date.now();
 
-    await insert('checks', {
+    await createSession({
         sId: sessionId,
         uid: userId,
         created_at: now,

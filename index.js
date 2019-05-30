@@ -88,6 +88,12 @@ alice.command(/откр(ыть|ой) (чек|сч[её]т)/i, async ctx => {
     return Reply.text(`Я добавила новый чек. ${SAY_DISH_AND_COST_TO_ADD}`);
 });
 
+// продолжи чек
+// продолжи счет
+// продолжи счёт
+// продолжить чек
+// продолжить счет
+// продолжить счёт
 alice.command(/продолжи(|ть) (чек|сч[её]т)/i, ctx => {
     if (hasOpenedReceipt(ctx)) {
         return Reply.text(SAY_DISH_AND_COST_TO_ADD);

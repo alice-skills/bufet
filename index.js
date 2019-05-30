@@ -1,8 +1,8 @@
 const { Alice, Reply } = require('yandex-dialogs-sdk');
-const { countCheckTotal, hasOpenedReceipt } = require('./lib/utils');
 const { formatBill } = require('./lib/formatter');
 const { updateSid, createSession } = require('./lib/helpers');
 const { checkTotal } = require('./lib/filters');
+const { countCheckTotal, hasNumber, deleteLeftHandExcessTokens, hasOpenedReceipt } = require('./lib/utils');
 
 const alice = new Alice();
 
@@ -15,7 +15,19 @@ alice.any(ctx => {
         .text(`Привет! Я помогу тебе вести список заказанного в баре. ${hasOpenedReceipt(ctx) ? '' : 'Для начала работы скажите - Открыть чек'}`)
 });
 
-lice.command(checkTotal, async ctx => {
+const stopWords = [
+    'доллар', 'евро', 'бакс'
+];
+
+alice.command(ctx => {
+    const { tokens } = ctx.nlu;
+
+    return tokens.some(token => stopWords.some(stopWord => token.includes(stopWord)));
+}, () => {
+    return Reply.text('Извини, я не могу работать с другими валютами, кроме рубля');
+});
+
+alice.command(checkTotal, async ctx => {
     if (!ctx.bill) {
         return Reply.text(NO_RECEIPTS);
     }
@@ -63,6 +75,34 @@ alice.command(['открыть чек', 'открой чек'], async ctx => {
     return Reply.text('Я добавила новый чек. Чтобы добавить позицию в чек, назови блюдо или напиток, а так же его стоимость');
 });
 
-alice.command(/.+/, ctx => Reply.text('Не поняла'));
+// Команда добавления позиции в чек
+alice.command(ctx => {
+    const { tokens } = ctx.nlu;
+
+    return hasNumber(tokens);
+}, ctx => {
+    const { tokens } = ctx.nlu;
+
+    const introductoryTokens = ['добавь', 'запиши', 'заказал'];
+
+    let startIndex;
+    let clippedArray;
+
+    startIndex = tokens.findIndex(token => introductoryTokens.includes(token.toLowerCase()));
+    clippedArray = tokens.slice(startIndex + 1);
+    deleteLeftHandExcessTokens(clippedArray);
+    clippedArray.reverse();
+
+    startIndex = clippedArray.findIndex(token => !isNaN(parseInt(token, 10)));
+    clippedArray = clippedArray.slice(startIndex + 1);
+    deleteLeftHandExcessTokens(clippedArray);
+    clippedArray.reverse();
+
+    const cost = [...tokens].reverse().find(token => !isNaN(parseInt(token, 10)));
+
+    return Reply.text(`Я распознала: ${clippedArray.join(' ')}, 1 штука, ${cost}р.`);
+})
+
+alice.command(/.+/, () => Reply.text('Не поняла'));
 
 alice.listen(process.env.PORT || 3000, '');

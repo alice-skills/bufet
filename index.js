@@ -55,12 +55,9 @@ alice.command(ctx => {
     return Reply.text('Извини, я не могу работать с другими валютами, кроме рубля');
 });
 
-// команда удаления
-alice.command(ctx => {
-    const words = ctx.nlu.tokens;
-
-    return words.includes('удали');
-}, async ctx => {
+// удали
+// удалить
+alice.command(/удали(|ть)/i, async ctx => {
 
     const items = ctx.bill && ctx.bill.items || [] ;
 

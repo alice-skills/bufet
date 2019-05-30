@@ -1,14 +1,23 @@
 {
-  "name": "a1",
-  "version": "1.0.0",
-  "description": "",
+  "name": "bufet",
+  "version": "0.0.1",
+  "description": "Скилл для Алисы для расчета в баре",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "yandex-dialogs-sdk": "^2.2.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alice-skills/bufet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alice-skills/bufet/issues"
+  },
+  "homepage": "https://github.com/alice-skills/bufet#readme"
 }

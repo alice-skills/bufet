@@ -12,7 +12,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "mongodb": "^3.2.6",
+    "mongodb": "^3.7.4",
     "lodash": "4.17.11",
     "yandex-dialogs-sdk": "^2.2.0"
   },
